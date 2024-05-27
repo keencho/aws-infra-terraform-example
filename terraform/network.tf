@@ -95,8 +95,6 @@ resource "aws_route_table_association" "rt-private-db-association" {
   route_table_id = element(aws_route_table.rt-private[*].id, count.index)
 }
 
-# remove routing table which unassociated with subnet (default created routing table when create vpc)
-
 ########## Subnets
 resource "aws_subnet" "public" {
   count                   = length(var.public_subnet_cidrs)
