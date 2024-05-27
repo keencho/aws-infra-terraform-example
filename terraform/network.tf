@@ -55,12 +55,6 @@ resource "aws_main_route_table_association" "main" {
   route_table_id = aws_route_table.rt-public.id
 }
 
-resource "aws_route_table_association" "rt-public-association" {
-  count          = length(var.public_subnet_cidrs)
-  subnet_id      = element(aws_subnet.public[*].id, count.index)
-  route_table_id = aws_route_table.rt-public.id
-}
-
 resource "aws_route" "route-public" {
   route_table_id         = aws_route_table.rt-public.id
   destination_cidr_block = "0.0.0.0/0"
@@ -81,18 +75,6 @@ resource "aws_route" "route-private" {
   route_table_id       = element(aws_route_table.rt-private[*].id, count.index)
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id       = element(aws_nat_gateway.nat[*].id, count.index)
-}
-
-resource "aws_route_table_association" "rt-private-association" {
-  count          = length(var.private_subnet_cidrs)
-  subnet_id      = element(aws_subnet.private[*].id, count.index)
-  route_table_id = element(aws_route_table.rt-private[*].id, count.index)
-}
-
-resource "aws_route_table_association" "rt-private-db-association" {
-  count          = length(var.db_subnet_cidrs)
-  subnet_id      = element(aws_subnet.private-db[*].id, count.index)
-  route_table_id = element(aws_route_table.rt-private[*].id, count.index)
 }
 
 ########## Subnets
@@ -128,4 +110,23 @@ resource "aws_subnet" "private-db" {
   tags = {
     Name = "${var.app_name}-subnet-db-private-${element(var.availability_zones, count.index)}"
   }
+}
+
+########## Routing Table - Subnet assocation
+resource "aws_route_table_association" "rt-public-association" {
+  count          = length(var.public_subnet_cidrs)
+  subnet_id      = element(aws_subnet.public[*].id, count.index)
+  route_table_id = aws_route_table.rt-public.id
+}
+
+resource "aws_route_table_association" "rt-private-association" {
+  count          = length(var.private_subnet_cidrs)
+  subnet_id      = element(aws_subnet.private[*].id, count.index)
+  route_table_id = element(aws_route_table.rt-private[*].id, count.index)
+}
+
+resource "aws_route_table_association" "rt-private-db-association" {
+  count          = length(var.db_subnet_cidrs)
+  subnet_id      = element(aws_subnet.private-db[*].id, count.index)
+  route_table_id = element(aws_route_table.rt-private[*].id, count.index)
 }
