@@ -49,6 +49,12 @@ resource "aws_route_table" "rt-public" {
   }
 }
 
+# rt-public as default routing table
+resource "aws_main_route_table_association" "main" {
+  vpc_id         = aws_vpc.vpc.id
+  route_table_id = aws_route_table.rt-public.id
+}
+
 resource "aws_route_table_association" "rt-public-association" {
   count          = length(var.public_subnet_cidrs)
   subnet_id      = element(aws_subnet.public[*].id, count.index)
@@ -88,6 +94,8 @@ resource "aws_route_table_association" "rt-private-db-association" {
   subnet_id      = element(aws_subnet.private-db[*].id, count.index)
   route_table_id = element(aws_route_table.rt-private[*].id, count.index)
 }
+
+# remove routing table which unassociated with subnet (default created routing table when create vpc)
 
 ########## Subnets
 resource "aws_subnet" "public" {
