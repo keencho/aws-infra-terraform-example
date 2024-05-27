@@ -1,0 +1,21 @@
+server:
+  servlet:
+    context-path: "/api"
+
+---
+
+spring:
+  config:
+    import:
+      - classpath:test.yml
+    activate:
+      on-profile: test, local-test
+
+---
+
+spring:
+  config:
+    import:
+      - classpath:prod.yml
+    activate:
+      on-profile: prod, local-prod

@@ -1,0 +1,7 @@
+bootJar {
+    archiveFileName = 'app-user.jar'
+}
+
+dependencies {
+    implementation project(path: ':core', configuration:'default')
+}
