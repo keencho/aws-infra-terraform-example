@@ -1,4 +1,4 @@
-package com.keencho.app;
+package com.keencho.app.utils;
 
 import org.springframework.core.env.Environment;
 

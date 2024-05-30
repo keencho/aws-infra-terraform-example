@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@common/*": ["../../common/src/*"]
+    }
+  },
+  "include": [
+    "src",
+    "../../common"
+  ],
+  "references": [{ "path": "./tsconfig.node.json"}]
+}

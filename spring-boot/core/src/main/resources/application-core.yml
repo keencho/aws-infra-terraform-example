@@ -2,6 +2,15 @@ server:
   servlet:
     context-path: "/api"
 
+spring:
+  datasource:
+    url: ${db_url}
+    username: ${db_username}
+    password: ${db_password}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
 ---
 
 spring:
