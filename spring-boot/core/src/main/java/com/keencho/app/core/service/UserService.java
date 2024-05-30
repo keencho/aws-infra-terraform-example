@@ -1,7 +1,7 @@
-package com.keencho.app.service;
+package com.keencho.app.core.service;
 
-import com.keencho.app.model.UserAccount;
-import com.keencho.app.repository.UserAccountRepository;
+import com.keencho.app.core.model.UserAccount;
+import com.keencho.app.core.repository.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

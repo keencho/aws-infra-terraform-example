@@ -1,4 +1,4 @@
-package com.keencho.app.model;
+package com.keencho.app.core.model;
 
 import jakarta.persistence.*;
 import lombok.Data;

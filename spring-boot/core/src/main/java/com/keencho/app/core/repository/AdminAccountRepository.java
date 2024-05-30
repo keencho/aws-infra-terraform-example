@@ -1,6 +1,6 @@
-package com.keencho.app.repository;
+package com.keencho.app.core.repository;
 
-import com.keencho.app.model.AdminAccount;
+import com.keencho.app.core.model.AdminAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AdminAccountRepository extends JpaRepository<AdminAccount, String> {

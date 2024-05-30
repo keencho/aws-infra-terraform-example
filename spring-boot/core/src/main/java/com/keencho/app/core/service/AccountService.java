@@ -1,4 +1,4 @@
-package com.keencho.app.service;
+package com.keencho.app.core.service;
 
 import java.util.List;
 

@@ -1,13 +1,10 @@
 spring:
   profiles:
     include: core
-  web:
-    resources:
-      add-mappings: false
 ---
 spring:
   config:
     activate:
       on-profile: local-test, local-prod
 server:
-  port: 1010
+  port: 10010
