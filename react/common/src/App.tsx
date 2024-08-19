@@ -68,7 +68,8 @@ export function App() {
 
     return (
         <div>
-            <h1>앱 타입: {APP_TYPE}</h1>
+            {/* @ts-ignore */}
+            <h1>앱 타입: {APP_TYPE} / 앱 모드: {import.meta.env.MODE.toUpperCase()}</h1>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <h2>계정생성</h2>
