@@ -4,6 +4,23 @@ on:
   workflow_dispatch:  # 수동으로 실행할 수 있도록 설정
 
 jobs:
+  build-root:
+    name: Build Root Project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'  # Node.js 버전
+
+      - name: Install dependencies for Root Project
+        working-directory: react  # 루트 package.json이 있는 디렉토리
+        run: npm install  # 의존성 설치
+        
   build-and-deploy-admin:
     name: Build and Deploy Admin
     runs-on: ubuntu-latest
@@ -16,10 +33,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'  # Node.js 버전을 적절히 설정
-
-      - name: Install dependencies for Admin
-        working-directory: react/app/admin  # Admin 프로젝트의 경로
-        run: npm install
 
       - name: Build the Admin project
         working-directory: react/app/admin  # Admin 프로젝트의 경로
@@ -49,10 +62,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'  # Node.js 버전을 적절히 설정
-
-      - name: Install dependencies for User
-        working-directory: react/app/user  # User 프로젝트의 경로
-        run: npm install
 
       - name: Build the User project
         working-directory: react/app/user  # User 프로젝트의 경로
