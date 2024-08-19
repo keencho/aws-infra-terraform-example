@@ -1,7 +1,7 @@
 name: Deploy Admin and User to S3
 
 on:
-  workflow_dispatch:  # 수동으로 실행할 수 있도록 설정
+  workflow_dispatch:
 
 jobs:
   build-root:
@@ -15,28 +15,21 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'  # Node.js 버전
+          node-version: '20'
 
-      - name: Cache node_modules
+      - name: Cache Node.js dependencies
         id: cache-node-modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./react/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('./react/package-lock.json') }}
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('./react/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node_modules-
+            ${{ runner.os }}-node-modules-
 
       - name: Install dependencies for Root Project
-        working-directory: ./react  # 루트 package.json이 있는 디렉토리
-        run: npm install  # 의존성 설치
+        working-directory: ./react
+        run: npm install
 
-      - name: Save node_modules cache
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        uses: actions/cache@v2
-        with:
-          path: ./react/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('./react/package-lock.json') }}
-        
   build-and-deploy-admin:
     name: Build and Deploy Admin
     runs-on: ubuntu-latest
@@ -49,18 +42,16 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'  # Node.js 버전을 적절히 설정
+          node-version: '20'
 
-      - name: Restore node_modules cache
-        uses: actions/cache@v2
+      - name: Restore Node.js dependencies cache
+        uses: actions/cache@v3
         with:
           path: ./react/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('./react/package-lock.json') }}
+          key: ${{ needs.build-root.outputs.cache-node-modules-key }}
 
       - name: Build the Admin project
-        working-directory: ./react/app/admin  # Admin 프로젝트의 경로
-        env:
-          PATH: ./react/node_modules/.bin:${{ env.PATH }} # Ensure the root's node_modules/.bin is in the PATH
+        working-directory: ./react/app/admin
         run: npm run build:production
 
       - name: Configure AWS credentials
@@ -86,10 +77,16 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'  # Node.js 버전을 적절히 설정
+          node-version: '20'
+
+      - name: Restore Node.js dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: ./react/node_modules
+          key: ${{ needs.build-root.outputs.cache-node-modules-key }}
 
       - name: Build the User project
-        working-directory: ./react/app/user  # User 프로젝트의 경로
+        working-directory: ./react/app/user
         run: npm run build:production
 
       - name: Configure AWS credentials
