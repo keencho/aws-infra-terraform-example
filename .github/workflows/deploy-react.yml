@@ -1,10 +1,11 @@
-name: Deploy to S3
+name: Deploy Admin and User to S3
 
 on:
   workflow_dispatch:  # 수동으로 실행할 수 있도록 설정
 
 jobs:
-  deploy:
+  build-and-deploy-admin:
+    name: Build and Deploy Admin
     runs-on: ubuntu-latest
 
     steps:
@@ -16,29 +17,56 @@ jobs:
         with:
           node-version: '20'  # Node.js 버전을 적절히 설정
 
-      - name: Install dependencies
+      - name: Install dependencies for Admin
+        working-directory: react/app/admin  # Admin 프로젝트의 경로
         run: npm install
 
-      - name: Build the project
-        run: npm run build
+      - name: Build the Admin project
+        working-directory: react/app/admin  # Admin 프로젝트의 경로
+        run: npm run build:production
 
-      - name: Upload to S3
+      - name: Upload Admin to S3
         uses: jakejarvis/s3-sync-action@v0.5.2
         with:
-          args: --acl public-read --delete
+          args: --acl public-read --delete --exact-timestamps
         env:
-          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
+          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}  # 공통 S3 버킷
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          SOURCE_DIR: 'dist'  # Vite의 기본 빌드 디렉토리 (dist)
+          SOURCE_DIR: 'react/app/admin/dist'  # Admin의 빌드 디렉터리
+          DEST_DIR: 'admin'  # S3의 /admin 폴더로 업로드
 
-      - name: Invalidate CloudFront (Optional)
-        if: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID != '' }}
-        uses: awact/cloudfront-action@v0.2.0
+  build-and-deploy-user:
+    name: Build and Deploy User
+    runs-on: ubuntu-latest
+    needs: build-and-deploy-admin  # Admin Job이 완료된 후 실행되도록 설정 (병렬로 실행하고 싶다면 이 줄을 제거)
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-          paths: '/*'
+          node-version: '20'  # Node.js 버전을 적절히 설정
+
+      - name: Install dependencies for User
+        working-directory: react/app/user  # User 프로젝트의 경로
+        run: npm install
+
+      - name: Build the User project
+        working-directory: react/app/user  # User 프로젝트의 경로
+        run: npm run build:production
+
+      - name: Upload User to S3
+        uses: jakejarvis/s3-sync-action@v0.5.2
+        with:
+          args: --acl public-read --delete --exact-timestamps
         env:
+          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}  # 공통 S3 버킷
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          SOURCE_DIR: 'react/app/user/dist'  # User의 빌드 디렉터리
+          DEST_DIR: 'user'  # S3의 /user 폴더로 업로드
