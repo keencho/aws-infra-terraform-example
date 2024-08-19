@@ -6,7 +6,7 @@ resource "aws_lb" "app-alb" {
   security_groups = [aws_security_group.app-alb-sg.id]
   subnets = [for subnet in aws_subnet.public : subnet.id]
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
 }
 
 resource "aws_security_group" "app-alb-sg" {
@@ -58,13 +58,30 @@ resource "aws_lb_target_group" "app-test" {
   }
 }
 
-resource "aws_lb_listener" "app-alb-listener" {
+resource "aws_lb_listener" "app-alb-listener-http" {
   load_balancer_arn = aws_lb.app-alb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
+    type             = "redirect"
+
+    redirect {
+      port = "443"
+      protocol = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "app-alb-listener-https" {
+  load_balancer_arn = aws_lb.app-alb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  certificate_arn = aws_acm_certificate.ssl-certificate.arn
+
+  default_action {
+    type = "forward"
     target_group_arn = aws_lb_target_group.app-test.arn
   }
 }
@@ -76,7 +93,7 @@ resource "aws_lb_target_group_attachment" "app-test-attachment" {
 }
 
 resource "aws_lb_listener_rule" "app-alb-test-rule" {
-  listener_arn = aws_lb_listener.app-alb-listener.arn
+  listener_arn = aws_lb_listener.app-alb-listener-https.arn
   priority = 1
 
   action {
