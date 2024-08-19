@@ -25,17 +25,16 @@ jobs:
         working-directory: react/app/admin  # Admin 프로젝트의 경로
         run: npm run build:production
 
-      - name: Upload Admin to S3
-        uses: jakejarvis/s3-sync-action@v0.5.2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          args: --acl public-read --delete --exact-timestamps
-        env:
-          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}  # 공통 S3 버킷
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          SOURCE_DIR: 'react/app/admin/dist'  # Admin의 빌드 디렉터리
-          DEST_DIR: 'admin'  # S3의 /admin 폴더로 업로드
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload Admin to S3
+        run: |
+          aws s3 sync react/app/admin/dist s3://${{ secrets.S3_BUCKET_NAME }}/admin --acl public-read --delete
 
   build-and-deploy-user:
     name: Build and Deploy User
@@ -59,14 +58,13 @@ jobs:
         working-directory: react/app/user  # User 프로젝트의 경로
         run: npm run build:production
 
-      - name: Upload User to S3
-        uses: jakejarvis/s3-sync-action@v0.5.2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          args: --acl public-read --delete --exact-timestamps
-        env:
-          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}  # 공통 S3 버킷
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          SOURCE_DIR: 'react/app/user/dist'  # User의 빌드 디렉터리
-          DEST_DIR: 'user'  # S3의 /user 폴더로 업로드
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload User to S3
+        run: |
+          aws s3 sync react/app/user/dist s3://${{ secrets.S3_BUCKET_NAME }}/user --acl public-read --delete
