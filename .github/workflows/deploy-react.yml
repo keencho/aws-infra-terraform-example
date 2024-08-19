@@ -24,6 +24,7 @@ jobs:
   build-and-deploy-admin:
     name: Build and Deploy Admin
     runs-on: ubuntu-latest
+    needs: build-root
 
     steps:
       - name: Check out the repository
@@ -52,7 +53,7 @@ jobs:
   build-and-deploy-user:
     name: Build and Deploy User
     runs-on: ubuntu-latest
-    needs: build-and-deploy-admin  # Admin Job이 완료된 후 실행되도록 설정 (병렬로 실행하고 싶다면 이 줄을 제거)
+    needs: build-root
 
     steps:
       - name: Check out the repository
