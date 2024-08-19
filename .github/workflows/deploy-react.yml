@@ -18,7 +18,7 @@ jobs:
           node-version: '20'  # Node.js 버전
 
       - name: Install dependencies for Root Project
-        working-directory: react  # 루트 package.json이 있는 디렉토리
+        working-directory: ./react  # 루트 package.json이 있는 디렉토리
         run: npm install  # 의존성 설치
         
   build-and-deploy-admin:
@@ -36,7 +36,7 @@ jobs:
           node-version: '20'  # Node.js 버전을 적절히 설정
 
       - name: Build the Admin project
-        working-directory: react/app/admin  # Admin 프로젝트의 경로
+        working-directory: ./react/app/admin  # Admin 프로젝트의 경로
         run: npm run build:production
 
       - name: Configure AWS credentials
@@ -48,7 +48,7 @@ jobs:
 
       - name: Upload Admin to S3
         run: |
-          aws s3 sync react/app/admin/dist s3://${{ secrets.S3_BUCKET_NAME }}/admin --acl public-read --delete
+          aws s3 sync ./react/app/admin/dist s3://${{ secrets.S3_BUCKET_NAME }}/admin --acl public-read --delete
 
   build-and-deploy-user:
     name: Build and Deploy User
@@ -65,7 +65,7 @@ jobs:
           node-version: '20'  # Node.js 버전을 적절히 설정
 
       - name: Build the User project
-        working-directory: react/app/user  # User 프로젝트의 경로
+        working-directory: ./react/app/user  # User 프로젝트의 경로
         run: npm run build:production
 
       - name: Configure AWS credentials
@@ -77,4 +77,4 @@ jobs:
 
       - name: Upload User to S3
         run: |
-          aws s3 sync react/app/user/dist s3://${{ secrets.S3_BUCKET_NAME }}/user --acl public-read --delete
+          aws s3 sync ./react/app/user/dist s3://${{ secrets.S3_BUCKET_NAME }}/user --acl public-read --delete
