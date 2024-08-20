@@ -38,5 +38,7 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 sync react/app/admin/dist s3://${{ secrets.S3_BUCKET_NAME }}/admin --acl public-read --delete
-          aws s3 sync react/app/user/dist s3://${{ secrets.S3_BUCKET_NAME }}/user --acl public-read --delete
+          aws s3 rm s3://${{ secrets.S3_BUCKET_NAME }}/admin --recursive
+          aws s3 rm s3://${{ secrets.S3_BUCKET_NAME }}/user --recursive
+          aws s3 cp react/app/admin/dist s3://${{ secrets.S3_BUCKET_NAME }}/admin --recursive
+          aws s3 cp react/app/user/dist s3://${{ secrets.S3_BUCKET_NAME }}/user --recursive
