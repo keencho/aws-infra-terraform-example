@@ -1,4 +1,4 @@
-import {APP_TYPE} from "@common/env.model.ts";
+import {APP_TYPE_KOR} from "@common/env.model.ts";
 import {useEffect, useState} from "react";
 
 interface Account {
@@ -69,7 +69,7 @@ export function App() {
     return (
         <div>
             {/* @ts-ignore */}
-            <h1>앱 타입: {APP_TYPE} / 앱 모드: {import.meta.env.MODE.toUpperCase()}</h1>
+            <h1>앱 타입: {APP_TYPE_KOR} / 앱 모드: {import.meta.env.MODE.toUpperCase()}</h1>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <h2>계정생성</h2>
