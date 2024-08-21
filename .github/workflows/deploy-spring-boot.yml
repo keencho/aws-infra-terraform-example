@@ -48,7 +48,7 @@ jobs:
         run: |
          docker build --build-arg JAR_PATH=app-admin/build/libs/*.jar --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:admin-latest -f app-admin/Dockerfile .
          docker build --build-arg JAR_PATH=app-user/build/libs/*.jar --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:user-latest -f app-user/Dockerfile .
-         docker build --build-arg --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:nginx-latest -f Dockerfile .
+         docker build --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:nginx-latest -f nginx.Dockerfile .
 
          docker push $ECR_REPOSITORY/$ECR_NAME:admin-latest
          docker push $ECR_REPOSITORY/$ECR_NAME:user-latest
