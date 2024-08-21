@@ -49,5 +49,5 @@ variable "db_subnet_cidrs" {
 variable "alb-health-check-path" {
   description = "Application Load Balancer Health Check Path"
   type        = string
-  default     = "/alb/health-check"
+  default     = "/health-check"
 }

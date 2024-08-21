@@ -26,6 +26,20 @@ resource "aws_cloudfront_distribution" "admin-distribution" {
     origin_path = "/admin"
   }
 
+  origin {
+    domain_name = aws_lb.app-alb.dns_name
+    origin_id   = aws_lb.app-alb.id
+
+    custom_origin_config {
+      http_port                = 80
+      https_port               = 443
+      origin_protocol_policy   = "https-only"
+      origin_ssl_protocols     = ["TLSv1.2"]
+      origin_keepalive_timeout = 5
+      origin_read_timeout      = 30
+    }
+  }
+
   enabled = true
   default_root_object = "index.html"
   comment = "admin distribution"
@@ -33,22 +47,41 @@ resource "aws_cloudfront_distribution" "admin-distribution" {
   aliases = ["app-admin.keencho.com"]
 
   default_cache_behavior {
-    allowed_methods        = ["GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH", "HEAD"]
+    allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     target_origin_id       = aws_s3_bucket.app-prod-react.id
-
-    forwarded_values {
-      query_string = false
-
-      cookies {
-        forward = "none"
-      }
-    }
 
     viewer_protocol_policy = "redirect-to-https"
     min_ttl = 0
     default_ttl = 3600
     max_ttl = 86400
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  ordered_cache_behavior {
+    path_pattern = "/api/*"
+    allowed_methods = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods = ["GET", "HEAD"]
+    target_origin_id       = aws_lb.app-alb.id
+
+    viewer_protocol_policy = "redirect-to-https"
+    default_ttl = 0
+    max_ttl     = 0
+    min_ttl     = 0
+
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "all"
+      }
+    }
   }
 
   price_class = "PriceClass_100"
@@ -82,6 +115,21 @@ resource "aws_cloudfront_distribution" "user-distribution" {
     origin_path = "/user"
   }
 
+
+  origin {
+    domain_name = aws_lb.app-alb.dns_name
+    origin_id   = aws_lb.app-alb.id
+
+    custom_origin_config {
+      http_port                = 80
+      https_port               = 443
+      origin_protocol_policy   = "https-only"
+      origin_ssl_protocols     = ["TLSv1.2"]
+      origin_keepalive_timeout = 5
+      origin_read_timeout      = 30
+    }
+  }
+
   enabled = true
   default_root_object = "index.html"
   comment = "user distribution"
@@ -95,7 +143,6 @@ resource "aws_cloudfront_distribution" "user-distribution" {
 
     forwarded_values {
       query_string = false
-
       cookies {
         forward = "none"
       }
@@ -105,6 +152,26 @@ resource "aws_cloudfront_distribution" "user-distribution" {
     min_ttl = 0
     default_ttl = 3600
     max_ttl = 86400
+  }
+
+  ordered_cache_behavior {
+    path_pattern = "/api/*"
+    allowed_methods = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods = ["GET", "HEAD"]
+    target_origin_id       = aws_lb.app-alb.id
+
+    viewer_protocol_policy = "redirect-to-https"
+    default_ttl = 0
+    max_ttl     = 0
+    min_ttl     = 0
+
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "all"
+      }
+    }
   }
 
   price_class = "PriceClass_100"

@@ -7,6 +7,13 @@ spring:
     url: ${db_url}
     username: ${db_username}
     password: ${db_password}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test, local-test
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,16 +22,8 @@ spring:
 
 spring:
   config:
-    import:
-      - classpath:test.yml
-    activate:
-      on-profile: test, local-test
-
----
-
-spring:
-  config:
-    import:
-      - classpath:prod.yml
     activate:
       on-profile: prod, local-prod
+  jpa:
+    hibernate:
+      ddl-auto: validate
