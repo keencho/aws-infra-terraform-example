@@ -37,11 +37,12 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Remove Exist & Upload New to S3
+        working-directory: react
         run: |
           aws s3 rm s3://${{ secrets.S3_BUCKET_NAME }}/admin --recursive
           aws s3 rm s3://${{ secrets.S3_BUCKET_NAME }}/user --recursive
-          aws s3 cp react/app/admin/dist s3://${{ secrets.S3_BUCKET_NAME }}/admin --recursive
-          aws s3 cp react/app/user/dist s3://${{ secrets.S3_BUCKET_NAME }}/user --recursive
+          aws s3 cp app/admin/dist s3://${{ secrets.S3_BUCKET_NAME }}/admin --recursive
+          aws s3 cp app/user/dist s3://${{ secrets.S3_BUCKET_NAME }}/user --recursive
 
       - name: Invalidate CloudFront
         run: |
