@@ -12,21 +12,21 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'corretto'
+      # - name: Setup JDK 21
+      #   uses: actions/setup-java@v4
+      #   with:
+      #     java-version: '21'
+      #     distribution: 'corretto'
           
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      # - name: Setup Gradle
+      #   uses: gradle/actions/setup-gradle@v3
 
-      - name: Build Gradle
-        working-directory: spring-boot
-        run: |
-          chmod +x ./gradlew
-          ./gradlew bootjar --project-dir ./app-admin
-          ./gradlew bootjar --project-dir ./app-user
+      # - name: Build Gradle
+      #   working-directory: spring-boot
+      #   run: |
+      #     chmod +x ./gradlew
+      #     ./gradlew bootjar --project-dir ./app-admin
+      #     ./gradlew bootjar --project-dir ./app-user
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -35,19 +35,49 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag and push image to Amazon ECR
+      # - name: Build, tag and push image to Amazon ECR
+      #   working-directory: spring-boot
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #   run: |
+      #    docker build --build-arg JAR_PATH=app-admin/build/libs/*.jar --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:admin-latest -f app-admin/Dockerfile .
+      #    docker build --build-arg JAR_PATH=app-user/build/libs/*.jar --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:user-latest -f app-user/Dockerfile .
+      #    docker build --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:nginx-latest -f nginx.Dockerfile .
+
+      #    docker push $ECR_REGISTRY/app-ecr:admin-latest
+      #    docker push $ECR_REGISTRY/app-ecr:user-latest
+      #    docker push $ECR_REGISTRY/app-ecr:nginx-latest
+
+      - name: CodeDeploy Blue / Green Deployment
         working-directory: spring-boot
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-         docker build --build-arg JAR_PATH=app-admin/build/libs/*.jar --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:admin-latest -f app-admin/Dockerfile .
-         docker build --build-arg JAR_PATH=app-user/build/libs/*.jar --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:user-latest -f app-user/Dockerfile .
-         docker build --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:nginx-latest -f nginx.Dockerfile .
-
-         docker push $ECR_REGISTRY/app-ecr:admin-latest
-         docker push $ECR_REGISTRY/app-ecr:user-latest
-         docker push $ECR_REGISTRY/app-ecr:nginx-latest
+          APPLICATION_NAME="${{ secrets.AWS_CODEDEPLOY_APPLICATION_NAME }}"
+          DEPLOYMENT_GROUP="${{ secrets.AWS_CODEDEPLOY_DEPLOYMENT_GROUP_NAME }}"
+          REGION="${{ secrets.AWS_REGION }}"
+          REVISION_JSON='{
+            "version": 1,
+            "Resources": [
+              {
+                "TargetService": {
+                  "Type": "AWS::ECS::Service",
+                  "Properties": {
+                    "TaskDefinition": "${{ secrets.AWS_CODEDEPLOY_TASK_DEFINITION }}",
+                    "LoadBalancerInfo": {
+                      "ContainerName": "nginx",
+                      "ContainerPort": 80
+                    },
+                    "PlatformVersion": "LATEST"
+                  }
+                }
+              }
+            ]
+          }'
+          
+          # Create a new deployment
+          aws deploy create-deployment \
+            --cli-input-json "{\"applicationName\":\"$APPLICATION_NAME\",\"deploymentGroupName\":\"$DEPLOYMENT_GROUP\",\"revision\":{\"revisionType\":\"AppSpecContent\",\"appSpecContent\":{\"content\":\"$(echo $REVISION_JSON | sed 's/"/\\"/g')\"}}}" \
+            --region $REGION
