@@ -59,7 +59,7 @@ resource "aws_codedeploy_deployment_group" "app-deploy-group" {
 
   ecs_service {
     cluster_name = aws_ecs_cluster.app-cluster.name
-    service_name = aws_ecs_service.app-ecs-service2.name
+    service_name = aws_ecs_service.app-ecs-service.name
   }
 
   load_balancer_info {

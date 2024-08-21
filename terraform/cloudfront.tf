@@ -115,7 +115,6 @@ resource "aws_cloudfront_distribution" "user-distribution" {
     origin_path = "/user"
   }
 
-
   origin {
     domain_name = aws_lb.app-alb.dns_name
     origin_id   = aws_lb.app-alb.id
