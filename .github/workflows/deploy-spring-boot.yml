@@ -24,6 +24,7 @@ jobs:
       - name: Build Gradle
         working-directory: spring-boot
         run: |
+          chmod +x ./gradlew
           ./gradlew bootjar --project-dir ./app-admin
           ./gradlew bootjar --project-dir ./app-user
 
