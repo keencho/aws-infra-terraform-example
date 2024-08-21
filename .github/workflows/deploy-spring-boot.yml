@@ -43,13 +43,41 @@ jobs:
         working-directory: spring-boot
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY_URI }}
-          ECR_NAME: ${{ secrets.AWS_ECR_REPOSITORY_NAME }} 
         run: |
-         docker build --build-arg JAR_PATH=app-admin/build/libs/*.jar --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:admin-latest -f app-admin/Dockerfile .
-         docker build --build-arg JAR_PATH=app-user/build/libs/*.jar --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:user-latest -f app-user/Dockerfile .
-         docker build --build-arg --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:nginx-latest -f Dockerfile .
+         docker build --build-arg JAR_PATH=app-admin/build/libs/*.jar --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:admin-latest -f app-admin/Dockerfile .
+         docker build --build-arg JAR_PATH=app-user/build/libs/*.jar --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:user-latest -f app-user/Dockerfile .
+         docker build --platform=linux/arm64 -t $ECR_REGISTRY/app-ecr:nginx-latest -f nginx.Dockerfile .
 
-         docker push $ECR_REPOSITORY/$ECR_NAME:admin-latest
-         docker push $ECR_REPOSITORY/$ECR_NAME:user-latest
-         docker push $ECR_REPOSITORY/$ECR_NAME:nginx-latest
+         docker push $ECR_REGISTRY/app-ecr:admin-latest
+         docker push $ECR_REGISTRY/app-ecr:user-latest
+         docker push $ECR_REGISTRY/app-ecr:nginx-latest
+
+      - name: CodeDeploy Blue / Green Deployment
+        working-directory: spring-boot
+        run: |
+          APPLICATION_NAME="${{ secrets.AWS_CODEDEPLOY_APPLICATION_NAME }}"
+          DEPLOYMENT_GROUP="${{ secrets.AWS_CODEDEPLOY_DEPLOYMENT_GROUP_NAME }}"
+          REGION="${{ secrets.AWS_REGION }}"
+          REVISION_JSON='{
+            "version": 1,
+            "Resources": [
+              {
+                "TargetService": {
+                  "Type": "AWS::ECS::Service",
+                  "Properties": {
+                    "TaskDefinition": "${{ secrets.AWS_CODEDEPLOY_TASK_DEFINITION }}",
+                    "LoadBalancerInfo": {
+                      "ContainerName": "nginx",
+                      "ContainerPort": 80
+                    },
+                    "PlatformVersion": "LATEST"
+                  }
+                }
+              }
+            ]
+          }'
+          
+          # Create a new deployment
+          aws deploy create-deployment \
+            --cli-input-json "{\"applicationName\":\"$APPLICATION_NAME\",\"deploymentGroupName\":\"$DEPLOYMENT_GROUP\",\"revision\":{\"revisionType\":\"AppSpecContent\",\"appSpecContent\":{\"content\":\"$(echo $REVISION_JSON | sed 's/"/\\"/g')\"}}}" \
+            --region $REGION
