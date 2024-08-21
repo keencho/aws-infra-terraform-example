@@ -46,8 +46,8 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY_URI }}
           ECR_NAME: ${{ secrets.AWS_ECR_REPOSITORY_NAME }} 
         run: |
-         docker build --build-arg JAR_PATH=app-admin/build/app-admin.jar --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:admin-latest -f app-admin/Dockerfile .
-         docker build --build-arg JAR_PATH=app-user/build/app-user.jar --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:user-latest -f app-user/Dockerfile .
+         docker build --build-arg JAR_PATH=app-admin/build/libs/*.jar --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:admin-latest -f app-admin/Dockerfile .
+         docker build --build-arg JAR_PATH=app-user/build/libs/*.jar --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:user-latest -f app-user/Dockerfile .
          docker build --build-arg --platform=linux/arm64 -t $ECR_REPOSITORY/$ECR_NAME:nginx-latest -f Dockerfile .
 
          docker push $ECR_REPOSITORY/$ECR_NAME:admin-latest
